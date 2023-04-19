@@ -38,4 +38,4 @@ pip install -e "."
 
 ## Changelog
 
-* 2023.04.20: initial version
+* 2023.04.19: initial version
