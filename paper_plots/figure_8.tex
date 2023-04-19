@@ -1,0 +1,275 @@
+\documentclass{standalone}
+
+\input{0_fontawesome}
+\input{0_colors}
+\input{0_preamble}
+
+\newcommand\inputfile{plot_data/traffic_load_results.csv}
+
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usetikzlibrary{plotmarks}
+
+\pgfplotsset{
+  /pgfplots/evaluation line legend/.style 2 args={
+    legend image code/.code={
+      \draw[#2] (0mm, 1.5mm) rectangle (6mm, -1.5mm);
+      \draw[#1] (0mm, 0mm) -- (6mm, 0mm);
+    }},
+  every axis/.append style={
+    label style={font=\normalsize},
+    tick label style={font=\normalsize}  ,
+    every x tick/.style={color=black, thin},
+    every y tick/.style={color=black, thin},
+  },
+  every axis plot/.append style={line width=1pt},
+  compat=1.17,
+}
+
+
+\begin{document}
+
+% Horizontal sizing
+% - Adjusted to fit two plots in one column
+\newcommand\PlotWidth{120pt}% 
+\newcommand\PlotHorSep{41pt}%
+% Vertical sizing
+\newcommand\PlotHeight{100pt}%  
+\newcommand\PlotVerSep{20pt}%
+
+% Mark types
+\newcommand\MarkFiveHundred{square}% 
+\newcommand\MarkOneThousand{|}%
+\newcommand\MarkFiveThousands{x}%
+\newcommand\MarkUnlimited{none}%
+
+\begin{tikzpicture}[every node/.style={scale=0.85}]
+
+
+  
+  \begin{groupplot} [
+    group style={
+      group size=2 by 2,
+      horizontal sep=\PlotHorSep,
+      vertical sep=\PlotVerSep,
+      group name=weight group,
+    },
+    axis y line = left,
+    ]
+
+    %%%%%%%%%%
+    % coverage, best
+    %%%%%%%%%%
+
+    \nextgroupplot[
+      height=\PlotHeight,
+      width=\PlotWidth,
+      ylabel = {pkt coverage},
+      axis x line* = bottom,
+      xmin = 1,
+      xmax = 4,
+      ymin = -0.05,
+      ymax = 1.1,
+      ytick = {0, 0.2, 0.4, 0.6, 0.8, 1},
+      yticklabels = {0, 0.2, 0.4, 0.6, 0.8, 1},
+      xtick = {1, 2, 3, 4},
+      xticklabels = {0.1x, 0.5x, 1x, 2x},
+      mark options={solid},
+      legend cell align=left,
+      legend columns=4,
+      legend style={
+        draw=none,
+        fill=none,
+        font=\footnotesize,
+        anchor=west,
+        at={(-0.3, 1.5)},
+        /tikz/every even column/.append style={column sep=6pt},
+      },
+    ]
+    
+    % Activity...
+    % ... unlimited 
+    \addplot+[mark=\MarkUnlimited, cGray, solid] table[x=x_pos, y=coverage_sentinel_mirroring_packet_full_magnifier_per_5, col sep=comma] {\inputfile};
+    \addlegendentry{unlimited}
+    % ... 5000
+    \addplot+[mark=\MarkFiveThousands, cViolet] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_5000_activity_magnifier_per_5, col sep=comma] {\inputfile};
+    \addlegendentry{top 5k}
+    % ... 1000
+    \addplot+[mark=\MarkOneThousand, cGreen] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_1000_activity_magnifier_per_5, col sep=comma] {\inputfile};
+    \addlegendentry{top 1k}
+    % ... 500
+    \addplot+[mark=\MarkFiveHundred, cRed] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_500_activity_magnifier_per_5, col sep=comma] {\inputfile};
+    \addlegendentry{top 500}
+    
+
+    % Legend group type
+    \addlegendimage{evaluation line legend={white}{fill=white, draw=none}}
+    \addlegendentry{}
+    \addlegendimage{evaluation line legend={black}{fill=white, draw=none}}
+    \addlegendentry{\activity}
+
+    \addlegendimage{evaluation line legend={black, dashed, dash pattern=on 1pt off 1pt}{fill=white, draw=none}}
+    \addlegendentry{\size}
+    
+
+    % Size...
+    % ... 500
+    \addplot+[mark=\MarkFiveHundred, cRed, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_500_size_magnifier_per_5, col sep=comma] {\inputfile};
+    % ... 1k
+    \addplot+[mark=\MarkOneThousand, cGreen, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_1000_size_magnifier_per_5, col sep=comma] {\inputfile};
+    % ... 5k
+    \addplot+[mark=\MarkFiveThousands, cViolet, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_5000_size_magnifier_per_5, col sep=comma] {\inputfile};
+
+
+    %%%%%%%%%%%%%%%%%%%%
+    % coverage worst & legend
+    %%%%%%%%%%%%%%%%%%%%
+
+    \nextgroupplot[
+      height=\PlotHeight,
+      width=\PlotWidth,
+      axis x line* = bottom,
+      xmin = 1,
+      xmax = 4,
+      ymin = -0.05,
+      ymax = 1.1,
+      ytick = {0, 0.2, 0.4, 0.6, 0.8, 1},
+      yticklabels = {0, 0.2, 0.4, 0.6, 0.8, 1},
+      xtick = {1, 2, 3, 4},
+      xticklabels = {0.1x, 0.5x, 1x, 2x},
+      mark options={solid},
+      legend cell align=left,
+      legend columns=4,
+      legend style={
+        draw=none,
+        fill=none,
+        font=\footnotesize,
+        anchor=west,
+        at={(0, 1.2)},
+        /tikz/every even column/.append style={column sep=6pt},
+      },
+    ]
+
+    % legend
+    % \addlegendimage{evaluation line legend={cGray}{fill=white, draw=none}}
+
+    % \addlegendimage{evaluation line legend={cViolet}{fill=white, draw=none}}
+    
+    % \addlegendimage{evaluation line legend={cGreen}{fill=white, draw=none}}
+    
+    % \addlegendimage{evaluation line legend={cRed}{fill=white, draw=none}}
+    
+    % plot data
+    
+    % 500
+    \addplot+[mark=\MarkFiveHundred, cRed] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_500_activity_magnifier_best, col sep=comma] {\inputfile};
+    
+    % 1000
+    \addplot+[mark=\MarkOneThousand, cGreen] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_1000_activity_magnifier_best, col sep=comma] {\inputfile};
+    
+    % 5000
+    \addplot+[mark=\MarkFiveThousands, cViolet] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_5000_activity_magnifier_best, col sep=comma] {\inputfile};
+    
+    % full
+    \addplot+[mark=\MarkUnlimited, cGray, solid] table[x=x_pos, y=coverage_sentinel_mirroring_packet_full_magnifier_best, col sep=comma] {\inputfile};
+    
+    % Size ...
+    % ... 500
+    \addplot+[mark=\MarkFiveHundred, cRed, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_500_size_magnifier_best, col sep=comma] {\inputfile};
+    % ... 1k
+    \addplot+[mark=\MarkOneThousand, cGreen, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_1000_size_magnifier_best, col sep=comma] {\inputfile};
+    % ... 5k
+    \addplot+[mark=\MarkFiveThousands, cViolet, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=coverage_sentinel_mirroring_packet_top_5000_size_magnifier_best, col sep=comma] {\inputfile};
+
+
+    %%%%%%%%%%
+    % mirroring best
+    %%%%%%%%%%
+
+    \nextgroupplot[
+      height=\PlotHeight,
+      width=\PlotWidth,
+      ylabel = {mirrored pkts (\%)},
+      xlabel = {traffic load},
+      ymode = log,
+      xmin = 1,
+      xmax = 4,
+      ymin = 0.000002,
+      ymax = 0.02,
+      axis x line* = bottom,
+      xtick = {1, 2, 3, 4},
+      xticklabels = {0.1x, 0.5x, 1x, 2x},
+      ytick = {0.000001, 0.00001, 0.0001, 0.001, 0.01},
+      yticklabels= {0.0001, 0.001, 0.01, 0.1, 1},
+      mark options={solid},
+    ]
+
+    % 500
+    \addplot+[mark=\MarkFiveHundred, cRed] table[x=x_pos, y=mirrored_traffic_top_500_activity_magnifier_per_5, col sep=comma] {\inputfile};
+    \addplot+[mark=\MarkFiveHundred, cRed, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=mirrored_traffic_top_500_size_magnifier_per_5, col sep=comma] {\inputfile};
+
+    % 1000
+    \addplot+[mark=\MarkOneThousand, cGreen] table[x=x_pos, y=mirrored_traffic_top_1000_activity_magnifier_per_5, col sep=comma] {\inputfile};
+    \addplot+[mark=\MarkOneThousand, cGreen, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=mirrored_traffic_top_1000_size_magnifier_per_5, col sep=comma] {\inputfile};
+
+    % 5000
+    \addplot+[mark=\MarkFiveThousands, cViolet] table[x=x_pos, y=mirrored_traffic_top_5000_activity_magnifier_per_5, col sep=comma] {\inputfile};
+    \addplot+[mark=\MarkFiveThousands, cViolet, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=mirrored_traffic_top_5000_size_magnifier_per_5, col sep=comma] {\inputfile};
+
+    % full
+    \addplot+[mark=\MarkUnlimited, cGray, solid] table[x=x_pos, y=mirrored_traffic_full_magnifier_per_5, col sep=comma] {\inputfile};
+
+    %%%%%%%%%%%%%%%%%%%%
+    % mirroring worst
+    %%%%%%%%%%%%%%%%%%%%
+
+    \nextgroupplot[
+      height=\PlotHeight,
+      width=\PlotWidth,
+      xlabel = {traffic load},
+      ymode = log,
+      xmin = 1,
+      xmax = 4,
+      ymin = 0.000002,
+      ymax = 0.02,
+      axis x line* = bottom,
+      xtick = {1, 2, 3, 4},
+      xticklabels = {0.1x, 0.5x, 1x, 2x},
+      ytick = {0.000001, 0.00001, 0.0001, 0.001, 0.01},
+      yticklabels= {0.0001, 0.001, 0.01, 0.1, 1},
+      mark options={solid},
+    ]
+
+    % 500
+    \addplot+[mark=\MarkFiveHundred, cRed] table[x=x_pos, y=mirrored_traffic_top_500_activity_magnifier_best, col sep=comma] {\inputfile};
+    \addplot+[mark=\MarkFiveHundred, cRed, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=mirrored_traffic_top_500_size_magnifier_best, col sep=comma] {\inputfile};
+
+    % 1000
+    \addplot+[mark=\MarkOneThousand, cGreen] table[x=x_pos, y=mirrored_traffic_top_1000_activity_magnifier_best, col sep=comma] {\inputfile};
+    \addplot+[mark=\MarkOneThousand, cGreen, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=mirrored_traffic_top_1000_size_magnifier_best, col sep=comma] {\inputfile};
+
+    % 5000
+    \addplot+[mark=\MarkFiveThousands, cViolet] table[x=x_pos, y=mirrored_traffic_top_5000_activity_magnifier_best, col sep=comma] {\inputfile};
+    \addplot+[mark=\MarkFiveThousands, cViolet, dashed, dash pattern=on 1pt off 1pt] table[x=x_pos, y=mirrored_traffic_top_5000_size_magnifier_best, col sep=comma] {\inputfile};
+
+    % full
+    \addplot+[mark=\MarkUnlimited, cGray, solid] table[x=x_pos, y=mirrored_traffic_full_magnifier_best, col sep=comma] {\inputfile};
+
+  \end{groupplot}
+
+  %%%%%%%%%%
+  % Titles %
+  %%%%%%%%%%
+  \draw(weight group c1r1.north) node[above]{\textbf{\permuted 5\%}};
+  \draw(weight group c2r1.north) node[above]{\textbf{\static}};
+  % \draw (0.8, 5.4) node {\large Sorting strategy:};
+  % \draw (1.25, 4.6) node {\large \# sentinels:};
+
+  % \clip (weight group c1r1.north west) rectangle (weight group c2r2.south east);
+
+
+\end{tikzpicture}
+
+\end{document}

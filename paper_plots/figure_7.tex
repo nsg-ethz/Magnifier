@@ -1,0 +1,142 @@
+\documentclass{standalone}
+
+\input{0_fontawesome}
+\input{0_colors}
+\input{0_preamble}
+
+\newcommand\inputfile{plot_data/traffic_load_results.csv}
+
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween, groupplots}
+\usetikzlibrary{plotmarks}
+
+\pgfplotsset{
+    every axis/.append style={
+      label style={font=\normalsize},
+      tick label style={font=\normalsize}  ,
+      every x tick/.style={color=black, thin},
+      every y tick/.style={color=black, thin},
+    },
+    every axis plot/.append style={line width=1pt},
+}
+
+\begin{document}
+
+\begin{tikzpicture}[every node/.style={scale=0.85}]
+
+  % Horizontal sizing
+  % - Adjusted to fit two plots in one column
+  \newcommand\PlotWidth{120pt} 
+  \newcommand\PlotHorSep{46pt}
+  % Vertical sizing
+  \newcommand\PlotHeight{4cm}  
+  \newcommand\PlotVerSep{0cm} 
+
+
+  \begin{groupplot} [
+    group style={
+      group size=2 by 1,
+      y descriptions at=edge left,
+      horizontal sep=\PlotHorSep,
+      vertical sep=\PlotVerSep,
+      group name=weight group,
+    },
+    axis y line = left,
+    ]
+
+    %%%%%%%%%%
+    % coverage, best
+    %%%%%%%%%%
+
+    \nextgroupplot[
+      height=\PlotHeight,
+      width=\PlotWidth,
+      ylabel = {pkt coverage},
+      axis x line* = bottom,
+      xlabel = {traffic load},
+      xmin = 1,
+      xmax = 4,
+      ymin = -0.05,
+      ymax = 1.1,
+      ytick = {0, 0.2, 0.4, 0.6, 0.8, 1},
+      yticklabels = { 0, 0.2, 0.4, 0.6, 0.8, 1},
+      xtick = {1, 2, 3, 4},
+      xticklabels = {0.1x, 0.5x, 1x, 2x},
+      legend cell align=left,
+      legend columns=2,
+      legend style={
+        draw=none,
+        fill=none,
+        font=\footnotesize,
+        anchor=north,
+        at={(1.75, 1.6)},
+        /tikz/every even column/.append style={column sep=6pt},
+      },
+    ]
+
+    % sampling only
+    \addplot+[mark=o, cRed, solid] table[x=x_pos, y=coverage_sampling_packet_magnifier_per_5, col sep=comma] {\inputfile};
+    \addlegendentry{naive inference}
+
+    % constant line at coverage values of samples only
+    \addplot[mark=none, cViolet, solid, samples=4] {0.000976};
+    \addlegendentry{samples only}
+
+    % magnifier
+    % ... random
+    \addplot+[mark=x, cDarkBlue, solid] table[x=x_pos, y=coverage_sentinel_mirroring_packet_full_magnifier_worst, col sep=comma] {\inputfile};
+    \addlegendentry{\random}
+    % ... static
+    \addplot+[mark=|, cGray, solid] table[x=x_pos, y=coverage_sentinel_mirroring_packet_full_magnifier_best, col sep=comma] {\inputfile};
+    \addlegendentry{\static}
+    % ... permuted 20%
+    \addplot+[mark=otimes, cYellow, solid] table[x=x_pos, y=coverage_sentinel_mirroring_packet_full_magnifier_per_20, col sep=comma] {\inputfile};
+    \addlegendentry{\permuted 20\%}
+    % ... permuted 5%
+    \addplot+[mark=square, cGreen, solid] table[x=x_pos, y=coverage_sentinel_mirroring_packet_full_magnifier_per_5, col sep=comma] {\inputfile};
+    \addlegendentry{\permuted 5\%}
+
+
+    %%%%%%%%%%%%%%%%%%%%
+    % mirroring
+    %%%%%%%%%%%%%%%%%%%%
+
+    \nextgroupplot[
+      height=\PlotHeight,
+      width=\PlotWidth,
+      ylabel = {mirrored pkts (\%)},
+      xlabel = {traffic load},
+    %   ymode = log,
+      xmin = 1,
+      xmax = 4,
+      ymax = 0.0033,
+      ymin = 0.00000009,
+      axis x line* = bottom,
+      xtick = {1, 2, 3, 4},
+      xticklabels = {0.1x, 0.5x, 1x, 2x},
+      ytick = {0.0001, 0.001, 0.002, 0.003},
+      yticklabels= {0.01, 0.1, 0.2, 0.3},
+    ]
+
+    % magnifier
+    % ... random
+    \addplot+[mark=x, cDarkBlue] table[x=x_pos, y=mirrored_traffic_full_magnifier_worst, col sep=comma] {\inputfile};
+    % ... static
+    \addplot+[mark=|, cGray] table[x=x_pos, y=mirrored_traffic_full_magnifier_best, col sep=comma] {\inputfile};
+    % ... permuted 20%
+    \addplot+[mark=otimes, cYellow] table[x=x_pos, y=mirrored_traffic_full_magnifier_per_20, col sep=comma] {\inputfile};
+    % ... permuted 5%
+    \addplot+[mark=square, cGreen] table[x=x_pos, y=mirrored_traffic_full_magnifier_per_5, col sep=comma] {\inputfile};
+
+  \end{groupplot}
+
+  %%%%%%%%%%
+  % Titles %
+  %%%%%%%%%%
+  \draw (54pt, 93pt+10pt) node[left] {\footnotesize Sampling (\textbf{not validated})};
+  \draw (54pt, 93pt) node[left] {\footnotesize \system (\textbf{validated})};
+\end{tikzpicture}
+
+\end{document}
